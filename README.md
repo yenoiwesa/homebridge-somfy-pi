@@ -41,7 +41,7 @@ To configure homebridge-somfy-pi, add the `Somfy-Pi` platform to the `platforms`
         {
             "platform": "Somfy-Pi",
             "name": "Somfy-Pi",
-            "host": "http://192.168.1.1:9000
+            "host": "http://192.168.1.1:9000"
         }
     ]
 }
