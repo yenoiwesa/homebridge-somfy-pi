@@ -1,4 +1,4 @@
-const Service = require('./service');
+import Service from './service.js';
 
 let Characteristic;
 
@@ -14,17 +14,13 @@ class AccessoryInformation extends Service {
 
         this.service.setCharacteristic(
             Characteristic.Manufacturer,
-            accessory.context.device.manufacturer
-        );
-        this.service.setCharacteristic(
-            Characteristic.Model,
-            accessory.context.device.model
+            accessory.context.shutter.manufacturer
         );
         this.service.setCharacteristic(
             Characteristic.SerialNumber,
-            accessory.context.device.id
+            accessory.context.shutter.id
         );
     }
 }
 
-module.exports = AccessoryInformation;
+export default AccessoryInformation;

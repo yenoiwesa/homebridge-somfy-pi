@@ -10,10 +10,9 @@
 
     "platforms": [
         {
-            "platform": "Connexoon",
-            "name": "Connexoon",
-            "username": "somfy account username",
-            "password": "somfy account password"
+            "platform": "Somfy-Pi",
+            "name": "Somfy-Pi",
+            "host": "http://192.168.168.7:9000"
         }
     ]
 }

@@ -1,48 +1,46 @@
 {
-    "name": "homebridge-connexoon",
-    "version": "2.1.0",
-    "description": "A Homebridge plugin providing support for the Connexoon, TaHoma and Cozytouch platforms and accessories.",
+    "name": "homebridge-somfy-pi",
+    "version": "0.1.0",
+    "description": "A Homebridge plugin interfacing with Nickduino / Pi-Somfy's REST API.",
     "main": "index.js",
+    "type": "module",
     "files": [
         "/index.js",
         "/src"
     ],
     "scripts": {
         "start": "homebridge -D -U ./homebridge-home -P .",
-        "debug": "ndb npm start",
         "lint": "npx prettier '**/*.{js,json,md,yml}' --check && eslint ."
     },
     "keywords": [
         "homebridge-plugin",
         "homebridge",
         "somfy",
-        "connexoon",
-        "tahoma"
+        "raspberry",
+        "pi"
     ],
     "author": "Matthieu Di Berardino",
     "license": "Apache-2.0",
     "devDependencies": {
-        "eslint": "^7.22.0",
-        "homebridge": "^1.3.4",
-        "ndb": "^1.1.5",
-        "prettier": "^2.2.1"
+        "eslint": "^8.2.0",
+        "homebridge": "^1.3.6",
+        "prettier": "^2.4.1"
     },
     "engines": {
-        "node": ">=11.0.0",
+        "node": ">=16.0.0",
         "homebridge": ">=1.0.0"
     },
     "dependencies": {
         "abort-controller": "^3.0.0",
-        "lodash": "^4.17.20",
-        "request": "^2.88.2",
-        "request-promise-native": "^1.0.9"
+        "lodash-es": "^4.17.21",
+        "node-fetch": "^3.1.0"
     },
-    "homepage": "https://github.com/yenoiwesa/homebridge-connexoon#readme",
+    "homepage": "https://github.com/yenoiwesa/homebridge-somfy-pi#readme",
     "repository": {
         "type": "git",
-        "url": "git://github.com/yenoiwesa/homebridge-connexoon.git"
+        "url": "git://github.com/yenoiwesa/homebridge-somfy-pi.git"
     },
     "bugs": {
-        "url": "http://github.com/yenoiwesa/homebridge-connexoon/issues"
+        "url": "http://github.com/yenoiwesa/homebridge-somfy-pi/issues"
     }
 }

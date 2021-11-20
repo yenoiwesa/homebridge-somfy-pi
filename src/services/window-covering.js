@@ -1,9 +1,8 @@
-const { get } = require('lodash');
-const AbortController = require('abort-controller');
-const Service = require('./service');
-const { cachePromise, delayPromise, ABORTED } = require('../utils');
+import { get } from 'lodash-es';
+import AbortController from 'abort-controller';
+import Service from './service.js';
+import { delayPromise } from '../utils.js';
 
-const POSITIONS_CACHE_MAX_AGE = 2 * 1000;
 const POSITION_STATE_CHANGING_DURATION = 6 * 1000;
 
 let Characteristic;
@@ -11,8 +10,6 @@ let Characteristic;
 const Command = {
     OPEN: 'open',
     CLOSE: 'close',
-    UP: 'up',
-    DOWN: 'down',
     MY: 'my',
 };
 
@@ -33,16 +30,11 @@ class WindowCovering extends Service {
 
         if (!Array.isArray(this.commands) || this.commands.length < 2) {
             this.log.error(
-                'The device commands settings must be an array of at least two commands.',
+                'The shutter commands settings must be an array of at least two commands.',
                 `Using default commands instead for ${accessory.name}.`
             );
             this.commands = DEFAULT_COMMANDS;
         }
-
-        this.getPosition = cachePromise(
-            this.doGetPosition.bind(this),
-            POSITIONS_CACHE_MAX_AGE
-        ).exec;
 
         Characteristic = api.hap.Characteristic;
 
@@ -50,12 +42,6 @@ class WindowCovering extends Service {
         // Percentage, 0 for closed and 100 for open
         this.currentPosition = this.getCharacteristic(
             Characteristic.CurrentPosition
-        ).on('get', (cb) =>
-            this.getHomekitState(
-                'current position',
-                this.getCurrentPosition.bind(this),
-                cb
-            )
         );
 
         // Target Position
@@ -72,13 +58,6 @@ class WindowCovering extends Service {
                 maxValue: 100,
                 minStep: this.targetPositionSteps,
             })
-            .on('get', (cb) =>
-                this.getHomekitState(
-                    'target position',
-                    this.getTargetPosition.bind(this),
-                    cb
-                )
-            )
             .on('set', (value, cb) =>
                 this.setHomekitState(
                     'target position',
@@ -100,57 +79,12 @@ class WindowCovering extends Service {
         this.positionState.updateValue(Characteristic.PositionState.STOPPED);
     }
 
-    async doGetPosition() {
-        let lastCommand = await this.device.getLastCommand();
-
-        // map UP and DOWN commands to OPEN and CLOSE
-        switch (lastCommand) {
-            case Command.UP:
-                lastCommand = Command.OPEN;
-                break;
-            case Command.DOWN:
-                lastCommand = Command.CLOSE;
-                break;
-        }
-
-        const position = Math.max(
-            this.commands.indexOf(lastCommand) * this.targetPositionSteps,
-            0
-        );
-
-        this.currentPosition.updateValue(position);
-        this.targetPosition.updateValue(position);
-
-        return position;
-    }
-
-    async doUpdateState() {
-        this.getPosition();
-    }
-
-    async getCurrentPosition() {
-        // fetch the latest position asynchronously
-        this.getPosition();
-
-        // but return the currently known one straight away
-        return this.currentPosition.value;
-    }
-
-    async getTargetPosition() {
-        // fetch the latest position asynchronously
-        this.getPosition();
-
-        // but return the currently known one straight away
-        return this.targetPosition.value;
-    }
-
     async setTargetPosition(value) {
         const controller = new AbortController();
         const abortSignal = controller.signal;
 
-        const command = this.commands[
-            Math.round(value / this.targetPositionSteps)
-        ];
+        const command =
+            this.commands[Math.round(value / this.targetPositionSteps)];
 
         if (command == null) {
             return;
@@ -165,24 +99,12 @@ class WindowCovering extends Service {
         // assign the current request controller
         this.controller = controller;
 
-        await this.device.cancelCurrentExecution();
-
-        if (abortSignal.aborted) {
-            this.log.debug(
-                `Command for ${this.device.name} was aborted before executing`
-            );
+        try {
+            await this.accessory.shutter.sendCommand(command);
+        } catch (error) {
+            this.log.error(error);
             return;
         }
-
-        // do not await for the execution to have been sent as there can
-        // be multiple retries
-        this.device.executeCommand(command, abortSignal).catch((error) => {
-            if (error === ABORTED) {
-                this.log.debug(`Command for ${this.device.name} was aborted`);
-            } else {
-                this.log.error(error);
-            }
-        });
 
         // set the final requested position after specific delay
         delayPromise(POSITION_STATE_CHANGING_DURATION, abortSignal)
@@ -211,4 +133,4 @@ class WindowCovering extends Service {
     }
 }
 
-module.exports = WindowCovering;
+export default WindowCovering;

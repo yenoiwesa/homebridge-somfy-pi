@@ -1,19 +1,15 @@
-const { get, isNumber, remove } = require('lodash');
-const OverkizAPI = require('./api/overkiz-api');
-const Accessory = require('./accessories/accessory');
-const ServicesMapping = require('./services-mapping');
+import { get, remove } from 'lodash-es';
+import RestAPI from './api/rest-api.js';
+import Accessory from './accessories/accessory.js';
 
-const PLUGIN_NAME = 'homebridge-connexoon';
-const PLATFORM_NAME = 'Connexoon';
-const DEVICES_CONFIG = 'devices';
+const PLUGIN_NAME = 'homebridge-somfy-pi';
+const SHUTTERS_CONFIG = 'shutters';
 const MINUTE = 60 * 1000;
 const INIT_RETRY_INTERVAL = 5; // minutes
-const POLLING_INTERVAL_CONFIG = 'pollingInterval';
-const POLLING_INTERVAL_DEFAULT = 10; // minutes
-const USE_LISTED_DEVICES_ONLY_CONFIG = 'useListedDevicesOnly';
-const USE_LISTED_DEVICES_ONLY_DEFAULT = false;
 
-class ConnexoonPlatform {
+export const PLATFORM_NAME = 'Somfy-Pi';
+
+export class Platform {
     constructor(log, config = {}, api) {
         this.log = log;
         this.config = config;
@@ -22,7 +18,7 @@ class ConnexoonPlatform {
 
         this.log(`${PLATFORM_NAME} Init`);
 
-        this.overkiz = new OverkizAPI(config, log);
+        this.rest = new RestAPI(config, log);
 
         /**
          * Platforms should wait until the "didFinishLaunching" event has fired before
@@ -53,28 +49,28 @@ class ConnexoonPlatform {
         try {
             const newAccessories = [];
 
-            const devices = await this.getDevices();
+            const shutters = await this.rest.listShutters();
 
-            for (const device of devices) {
+            for (const shutter of shutters) {
                 // find the existing accessory if one was restored from cache
                 let accessory = this.accessories.find(
-                    (accessory) => accessory.context.device.id === device.id
+                    (accessory) => accessory.context.shutter.id === shutter.id
                 );
 
                 // if none found, create a new one
                 if (!accessory) {
-                    const uuid = this.api.hap.uuid.generate(device.id);
+                    const uuid = this.api.hap.uuid.generate(shutter.id);
                     const homekitAccessory = new this.api.platformAccessory(
-                        device.name,
+                        shutter.name,
                         uuid
                     );
-                    homekitAccessory.context.device = device.toContext();
+                    homekitAccessory.context.shutter = shutter.toContext();
                     accessory = this.createAccessory(homekitAccessory);
                     this.accessories.push(accessory);
                     newAccessories.push(accessory);
                 }
 
-                accessory.assignDevice(device);
+                accessory.assignShutter(shutter);
             }
 
             // register new accessories
@@ -88,10 +84,10 @@ class ConnexoonPlatform {
                 );
             }
 
-            // unregister accessories with no device assigned
+            // unregister accessories with no shutter assigned
             const orphanAccessories = remove(
                 this.accessories,
-                (accessory) => !accessory.device
+                (accessory) => !accessory.shutter
             );
             if (orphanAccessories.length) {
                 this.log.debug(
@@ -105,8 +101,6 @@ class ConnexoonPlatform {
                     )
                 );
             }
-
-            this.initPolling();
         } catch (error) {
             this.log.error(
                 `Could not initialise platform, will retry in ${INIT_RETRY_INTERVAL} min`
@@ -121,8 +115,8 @@ class ConnexoonPlatform {
     createAccessory(homekitAccessory) {
         // retrieve accessory config
         const config = get(
-            this.devicesConfig,
-            homekitAccessory.context.device.name
+            get(this.config, SHUTTERS_CONFIG, {}),
+            homekitAccessory.context.shutter.name
         );
 
         return new Accessory({
@@ -132,67 +126,4 @@ class ConnexoonPlatform {
             config,
         });
     }
-
-    async getDevices() {
-        const devices = [];
-
-        const allDevices = await this.overkiz.listDevices();
-        const useListedDevicesOnly = get(
-            this.config,
-            USE_LISTED_DEVICES_ONLY_CONFIG,
-            USE_LISTED_DEVICES_ONLY_DEFAULT
-        );
-
-        for (const device of allDevices) {
-            if (useListedDevicesOnly && !(device.name in this.devicesConfig)) {
-                this.log.info(
-                    `Ignored ${device.name} as it is not listed in devices`
-                );
-                continue;
-            }
-
-            // unsupported device types are skipped
-            if (device.type in ServicesMapping) {
-                devices.push(device);
-            } else {
-                this.log.debug(`Ignored device of type ${device.type}`);
-            }
-        }
-        this.log.debug(`Found ${devices.length} devices`);
-
-        return devices;
-    }
-
-    initPolling() {
-        const pollingInterval = Math.max(
-            get(this.config, POLLING_INTERVAL_CONFIG, POLLING_INTERVAL_DEFAULT),
-            0
-        );
-
-        if (pollingInterval && isNumber(pollingInterval)) {
-            this.log.info(
-                `Starting polling for Connexoon accessory state every ${pollingInterval} minute(s)`
-            );
-
-            // start polling
-            this.poll(pollingInterval * MINUTE);
-        } else {
-            this.log.info(`Polling for Connexoon accessory state disabled`);
-        }
-    }
-
-    poll(interval) {
-        setInterval(() => {
-            this.log.debug(`Polling for Connexoon accessory state`);
-            for (const accessory of this.accessories) {
-                accessory.updateState();
-            }
-        }, interval);
-    }
-
-    get devicesConfig() {
-        return get(this.config, DEVICES_CONFIG, {});
-    }
 }
-
-module.exports = { PLATFORM_NAME, ConnexoonPlatform };

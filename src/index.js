@@ -1,5 +1,5 @@
-const { PLATFORM_NAME, ConnexoonPlatform } = require('./connexoon-platform');
+import { PLATFORM_NAME, Platform } from './platform.js';
 
-module.exports = (api) => {
-    api.registerPlatform(PLATFORM_NAME, ConnexoonPlatform);
+export default (api) => {
+    api.registerPlatform(PLATFORM_NAME, Platform);
 };

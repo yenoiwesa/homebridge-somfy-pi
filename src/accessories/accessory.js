@@ -1,5 +1,5 @@
-const ServicesMapping = require('../services-mapping');
-const AccessoryInformation = require('../services/accessory-information');
+import AccessoryInformation from '../services/accessory-information.js';
+import WindowCovering from '../services/window-covering.js';
 
 class Accessory {
     constructor({ api, log, homekitAccessory, config }) {
@@ -17,27 +17,23 @@ class Accessory {
             })
         );
 
-        const serviceClasses = ServicesMapping[this.context.device.type];
-
-        for (const ServiceClass of serviceClasses) {
-            const service = new ServiceClass({
+        this.services.push(
+            new WindowCovering({
                 api,
                 log,
                 accessory: this,
                 config,
-            });
-
-            this.services.push(service);
-        }
+            })
+        );
 
         this.log.debug(`Found ${this.constructor.name} ${this.name}`);
     }
 
-    assignDevice(device) {
-        this.device = device;
+    assignShutter(shutter) {
+        this.shutter = shutter;
 
-        // use the most up to date device in the accessory context
-        this.context.device = device.toContext();
+        // use the most up to date shutter in the accessory context
+        this.context.shutter = shutter.toContext();
     }
 
     getHomekitAccessory() {
@@ -49,14 +45,8 @@ class Accessory {
     }
 
     get name() {
-        return this.context.device.name;
-    }
-
-    async updateState() {
-        for (const service of this.services) {
-            service.updateState();
-        }
+        return this.context.shutter.name;
     }
 }
 
-module.exports = Accessory;
+export default Accessory;

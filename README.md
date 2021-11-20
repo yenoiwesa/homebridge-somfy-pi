@@ -1,8 +1,4 @@
-<p align="center">
-    <img src="documentation/logo.png" width="300" alt="Connexoon logo">
-</p>
-
-# Homebridge Connexoon for RTS
+# Homebridge Somfy Pi
 
 A Homebridge plugin providing support for the **Connexoon** (Somfy), **TaHoma** (Somfy) and **Cozytouch** (Atlantic, Thermor, Sauter) platforms and accessories working over the RTS protocol.
 
@@ -12,7 +8,7 @@ This plugin does not support Somfy IO devices, only RTS devices. Use the [homebr
 
 # Requirements
 
--   **Node** version 11 or above (verify with `node --version`).
+-   **Node** version 16 or above (verify with `node --version`).
 -   **Homebridge** version 1.0.0 or above.
 
 # Installation
@@ -128,25 +124,6 @@ It is also possible to override the configuration to have only two 'steps' for t
 ```json
 ["close", "my"]
 ```
-
-# Limitation
-
-This platform has been designed to support RTS devices only. As of now, the following device types are supported:
-
--   Awning
--   Curtain
--   Exterior Screen
--   Exterior Venetian Blind
--   Generic
--   Pergola
--   Roller Shutter
--   Screen
--   Swinging Shutter
--   VenetianBlind
-
-Support for more types may be added as needed.
-
-Since the RTS protocol is one-way, actual closure state is unknown and must be inferred from the last command that was submitted to the device.
 
 # Contribute
 

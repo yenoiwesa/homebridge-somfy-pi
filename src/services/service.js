@@ -19,20 +19,6 @@ class Service {
         return service;
     }
 
-    get device() {
-        return this.accessory.device;
-    }
-
-    updateState() {
-        if (this.device) {
-            return this.doUpdateState();
-        }
-    }
-
-    doUpdateState() {
-        // to be implemented in children classes
-    }
-
     getHomekitService() {
         return this.service;
     }
@@ -44,9 +30,11 @@ class Service {
     async getHomekitState(state, getStateFn, callback) {
         this.log.debug(`Get ${this.accessory.name} ${state}`);
 
-        if (!this.device) {
-            callback('No device is associated to this service');
-            this.log.error(`No device is associated to ${this.accessory.name}`);
+        if (!this.accessory.shutter) {
+            callback('No shutter is associated to this service');
+            this.log.error(
+                `No shutter is associated to ${this.accessory.name}`
+            );
             return;
         }
 
@@ -72,9 +60,11 @@ class Service {
             `Set ${this.accessory.name} ${state} with value: ${value}`
         );
 
-        if (!this.device) {
-            callback('No device is associated to this service');
-            this.log.error(`No device is associated to ${this.accessory.name}`);
+        if (!this.accessory.shutter) {
+            callback('No shutter is associated to this service');
+            this.log.error(
+                `No shutter is associated to ${this.accessory.name}`
+            );
             return;
         }
 
@@ -96,4 +86,4 @@ class Service {
     }
 }
 
-module.exports = Service;
+export default Service;
