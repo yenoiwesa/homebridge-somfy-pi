@@ -33,7 +33,7 @@ class RestAPI {
             const shutters = [];
 
             for (let [id, name] of Object.entries(config.Shutters)) {
-                shutters.push(new Shutter(id, name + ' Test', this));
+                shutters.push(new Shutter(id, name, this));
             }
 
             return shutters;
