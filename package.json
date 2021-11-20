@@ -1,7 +1,7 @@
 {
     "name": "homebridge-somfy-pi",
     "version": "0.1.0",
-    "description": "A Homebridge plugin interfacing with Nickduino / Pi-Somfy's REST API.",
+    "description": "A Homebridge plugin interfacing with Nickduino/Pi-Somfy's REST API.",
     "main": "index.js",
     "type": "module",
     "files": [

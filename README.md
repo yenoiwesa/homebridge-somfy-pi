@@ -1,10 +1,6 @@
 # Homebridge Somfy Pi
 
-A Homebridge plugin providing support for the **Connexoon** (Somfy), **TaHoma** (Somfy) and **Cozytouch** (Atlantic, Thermor, Sauter) platforms and accessories working over the RTS protocol.
-
-This plugin's implementation is inspired by and initially based on Romain Duboc's [homebridge-tahoma](https://github.com/dubocr/homebridge-tahoma) plugin.
-
-This plugin does not support Somfy IO devices, only RTS devices. Use the [homebridge-tahoma](https://github.com/dubocr/homebridge-tahoma) plugin if you have IO devices in your installation.
+A Homebridge plugin providing HomeKit support for the [Nickduino/Pi-Somfy](https://github.com/Nickduino/Pi-Somfy) project via its REST API.
 
 # Requirements
 
@@ -22,12 +18,10 @@ npm install -g homebridge
 2. Install the plugin using:
 
 ```sh
-npm install -g homebridge-connexoon
+npm install -g homebridge-somfy-pi
 ```
 
 3. Update your configuration file. See bellow for a sample.
-
-> **Important:** If the plugin fails with login errors, make sure to set the `service` configuration to one that works for your geographical region, as your Somfy account will be linked to only one of the services (servers). See the settings section below.
 
 > **Note:** it is also possible to install this plugin in a local `npm` package instead using the homebridge option `--plugin-path`.
 
@@ -35,7 +29,7 @@ npm install -g homebridge-connexoon
 
 ## General settings
 
-To configure homebridge-connexoon, add the `Connexoon` platform to the `platforms` section of your homebridge's `config.js` file:
+To configure homebridge-somfy-pi, add the `Somfy-Pi` platform to the `platforms` section of your homebridge's `config.js` file:
 
 ```json
 {
@@ -45,12 +39,9 @@ To configure homebridge-connexoon, add the `Connexoon` platform to the `platform
 
     "platforms": [
         {
-            "platform": "Connexoon",
-            "name": "My Connexoon Hub",
-
-            "username": "<Somfy account username>",
-            "password": "<Somfy account password>",
-            "service": "Connexoon"
+            "platform": "Somfy-Pi",
+            "name": "Somfy-Pi",
+            "host": "http://192.168.1.1:9000
         }
     ]
 }
@@ -60,27 +51,19 @@ The platform can be configured with the following parameters:
 
 ### Required settings
 
-| Parameter  | Type   | Default        | Note                                                                                                    |
-| ---------- | ------ | -------------- | ------------------------------------------------------------------------------------------------------- |
-| `username` | String | `null`         | Your Somfy / TaHoma / Cozytouch account username.                                                       |
-| `password` | String | `null`         | Your Somfy / TaHoma / Cozytouch account password.                                                       |
-| `service`  | String | `ConnexoonRTS` | The name of the service used by your hub. Can be: `Cozytouch`, `TaHoma`, `Connexoon` or `ConnexoonRTS`. |
+| Parameter | Type   | Default | Note                                                                         |
+| --------- | ------ | ------- | ---------------------------------------------------------------------------- |
+| `host`    | String | `null`  | The URL where the Somfy-Pi web server is accessible at on the local network. |
 
 ### Optional settings
 
-| Parameter              | Type             | Default | Note                                                                                                                                                                                                                                                                                                                                                   |
-| ---------------------- | ---------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `devices`              | Object           | `null`  | A JSON object that allows to configure specific devices, using their name as key and configuration Object as value. Accepted configurations differ from device to device. See sections below.                                                                                                                                                          |
-| `pollingInterval`      | Number (minutes) | `10`    | The polling interval for refreshing the platform's accessories state for automations, in minutes. By detault set to 10 minutes, it can be set to `0` to disable polling. Note that the information is refreshed on demand when using the Home app, this configuration is designed to let Homekit automations react to state updates in the background. |
-| `useListedDevicesOnly` | Boolean          | `false` | If set to `true`, only the devices listed in the `devices` setting will be included in the platform. Other devices will be filtered out. To include a device with no additional configuration, use an empty object as value: `"Bedroom Blind": {}`.                                                                                                    |
+| Parameter  | Type   | Default | Note                                                                                                                                    |
+| ---------- | ------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `shutters` | Object | `null`  | A JSON object that allows to configure specific shutters, using their name as key and configuration Object as value. See section below. |
 
-## Device-specific configuration
+## Shutter-specific configuration
 
-Each device can receive additional configurations according to its device type registered in the Connexoon app (or equivalent).
-
-### Window Coverings
-
-Screens (such as window blinds) and Roller Shutters accept the `commands` configuration:
+Each shutter can receive specific additional configurations. For instance, they can accept the `commands` configuration:
 
 ```json
 {
@@ -99,7 +82,7 @@ Screens (such as window blinds) and Roller Shutters accept the `commands` config
 }
 ```
 
-Note that the above configuration is the default for a Screen, and thus does not need to declared in the homebridge configuration file to use the default.
+Note that the above configuration is the default for a shutter, and thus does not need to declared in the homebridge configuration file to use the default.
 
 #### `commands` - Array - Optional
 
