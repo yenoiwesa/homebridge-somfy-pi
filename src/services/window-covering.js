@@ -74,8 +74,6 @@ class WindowCovering extends Service {
         );
 
         // set initial values
-        this.currentPosition.updateValue(0);
-        this.targetPosition.updateValue(0);
         this.positionState.updateValue(Characteristic.PositionState.STOPPED);
     }
 
